@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "id": "examplemod",
+  "id": "btabreeding",
   "version": "${version}",
 
-  "name": "Example Mod",
+  "name": "Animal Breeding",
   "description": "This mod aims to help new BTA modders.",
   "authors": [
-    "Turnip Labs"
+    "Useless"
   ],
   "contact": {
     "homepage": "",
@@ -19,20 +19,20 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-			"turniplabs.examplemod.ExampleMod"
+			"useless.btabreeding.BtaBreeding"
     ],
 		"beforeGameStart": [
-			"turniplabs.examplemod.ExampleMod"
+			"useless.btabreeding.BtaBreeding"
 		],
 		"afterGameStart": [
-			"turniplabs.examplemod.ExampleMod"
+			"useless.btabreeding.BtaBreeding"
 		],
 		"recipesReady": [
-			"turniplabs.examplemod.ExampleMod"
+			"useless.btabreeding.BtaBreeding"
 		]
 	},
   "mixins": [
-      "examplemod.mixins.json"
+      "btabreeding.mixins.json"
   ],
 
   "depends": {
