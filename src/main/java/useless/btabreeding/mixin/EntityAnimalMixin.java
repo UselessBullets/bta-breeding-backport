@@ -28,15 +28,8 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	public int breedingTimer = 0;
 	@Unique
 	public int fedTimer = 0;
-	@Override
-	public void init(){
-		super.init();
-		try {
-			entityData.define(31, new Integer(0));
-		} catch (IllegalArgumentException e){
-			BtaBreeding.LOGGER.error(e.getMessage());
-		}
-	}
+	@Unique
+	public int childhoodTimer = 0;
 
 	@Override
 	public int btabreeding$getBreedingTimer() {
@@ -50,11 +43,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 
 	@Override
 	public int btabreeding$getChildTimer() {
-		try {
-			return entityData.getInt(31);
-		} catch (Exception e){
-			return 0;
-		}
+		return childhoodTimer;
 	}
 
 	@Override
@@ -69,7 +58,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 
 	@Override
 	public void btabreeding$setChildTimer(int value) {
-		entityData.set(31, value);
+		this.childhoodTimer = value;
 	}
 
 	@Override
@@ -234,13 +223,13 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	private void saveData(CompoundTag tag, CallbackInfo ci){
 		tag.putInt("breeding$breedtime", breedingTimer);
 		tag.putInt("breeding$fedtime", fedTimer);
-		tag.putInt("breeding$childtime", btabreeding$getChildTimer());
+		tag.putInt("breeding$childtime", childhoodTimer);
 	}
 
 	@Inject(method = "readAdditionalSaveData(Lcom/mojang/nbt/CompoundTag;)V", at = @At("TAIL"))
 	private void loadData(CompoundTag tag, CallbackInfo ci){
 		this.breedingTimer = tag.getInteger("breeding$breedtime");
 		this.fedTimer =	tag.getInteger("breeding$fedtime");
-		btabreeding$setChildTimer(tag.getInteger("breeding$childtime"));
+		this.childhoodTimer = tag.getInteger("breeding$childtime");
 	}
 }
