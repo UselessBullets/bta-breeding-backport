@@ -1,5 +1,6 @@
 package useless.btabreeding.mixin;
 
+import com.mojang.nbt.CompoundTag;
 import net.minecraft.core.entity.Entity;
 import net.minecraft.core.entity.EntityPathfinder;
 import net.minecraft.core.entity.animal.EntityAnimal;
@@ -9,6 +10,9 @@ import net.minecraft.core.item.ItemStack;
 import net.minecraft.core.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import useless.btabreeding.BtaBreeding;
 import useless.btabreeding.IBreeding;
 
@@ -24,8 +28,15 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	public int breedingTimer = 0;
 	@Unique
 	public int fedTimer = 0;
-	@Unique
-	public int childhoodTimer = 0;
+	@Override
+	public void init(){
+		super.init();
+		try {
+			entityData.define(31, new Integer(0));
+		} catch (IllegalArgumentException e){
+			BtaBreeding.LOGGER.error(e.getMessage());
+		}
+	}
 
 	@Override
 	public int btabreeding$getBreedingTimer() {
@@ -39,7 +50,11 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 
 	@Override
 	public int btabreeding$getChildTimer() {
-		return childhoodTimer;
+		try {
+			return entityData.getInt(31);
+		} catch (Exception e){
+			return 0;
+		}
 	}
 
 	@Override
@@ -54,7 +69,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 
 	@Override
 	public void btabreeding$setChildTimer(int value) {
-		this.childhoodTimer = value;
+		entityData.set(31, value);
 	}
 
 	@Override
@@ -96,7 +111,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 
 	@Override
 	public boolean btabreeding$isBaby() {
-		return childhoodTimer > 0;
+		return btabreeding$getChildTimer() > 0;
 	}
 
 	@Override
@@ -105,7 +120,19 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 		boolean flag = super.interact(entityplayer);
 		if (item != null && btabreeding$isFoodItem(item) && (btabreeding$isBreedable() || btabreeding$isBaby()) && item.consumeItem(entityplayer)){
 			if (this.btabreeding$isBaby()){
-				this.childhoodTimer = (int) (childhoodTimer * 0.75f);
+				this.btabreeding$setChildTimer((int) (btabreeding$getChildTimer() * 0.75f));
+				double d = this.random.nextGaussian() * 0.02;
+				double d1 = this.random.nextGaussian() * 0.02;
+				double d2 = this.random.nextGaussian() * 0.02;
+				this.world.spawnParticle(
+					"soulflame",
+					this.x + (double)(this.random.nextFloat() * this.bbWidth * 2.0F) - (double)this.bbWidth,
+					this.y + 0.5 + (double)(this.random.nextFloat() * this.bbHeight),
+					this.z + (double)(this.random.nextFloat() * this.bbWidth * 2.0F) - (double)this.bbWidth,
+					d,
+					d1,
+					d2
+				);
 			} else {
 				this.btabreeding$setFedTimer(20 * 15);
 			}
@@ -119,8 +146,8 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 		if (breedingTimer > 0){
 			breedingTimer--;
 		}
-		if (childhoodTimer > 0){
-			childhoodTimer--;
+		if (btabreeding$getChildTimer() > 0){
+			btabreeding$setChildTimer(btabreeding$getChildTimer()-1);
 		}
 		if (btabreeding$isFed()){
 			fedTimer--;
@@ -202,5 +229,18 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 				);
 		}
 
+	}
+	@Inject(method = "addAdditionalSaveData(Lcom/mojang/nbt/CompoundTag;)V", at = @At("TAIL"))
+	private void saveData(CompoundTag tag, CallbackInfo ci){
+		tag.putInt("breeding$breedtime", breedingTimer);
+		tag.putInt("breeding$fedtime", fedTimer);
+		tag.putInt("breeding$childtime", btabreeding$getChildTimer());
+	}
+
+	@Inject(method = "readAdditionalSaveData(Lcom/mojang/nbt/CompoundTag;)V", at = @At("TAIL"))
+	private void loadData(CompoundTag tag, CallbackInfo ci){
+		this.breedingTimer = tag.getInteger("breeding$breedtime");
+		this.fedTimer =	tag.getInteger("breeding$fedtime");
+		btabreeding$setChildTimer(tag.getInteger("breeding$childtime"));
 	}
 }
