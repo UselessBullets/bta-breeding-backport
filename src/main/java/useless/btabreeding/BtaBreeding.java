@@ -11,7 +11,7 @@ import turniplabs.halplibe.util.GameStartEntrypoint;
 import turniplabs.halplibe.util.RecipeEntrypoint;
 
 
-public class BtaBreeding implements ModInitializer, GameStartEntrypoint, RecipeEntrypoint {
+public class BtaBreeding implements ModInitializer {
     public static final String MOD_ID = "btabreeding";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     @Override
@@ -19,20 +19,6 @@ public class BtaBreeding implements ModInitializer, GameStartEntrypoint, RecipeE
         LOGGER.info("BTA Sex mod initialized.");
     }
 
-	@Override
-	public void beforeGameStart() {
-
-	}
-
-	@Override
-	public void afterGameStart() {
-
-	}
-
-	@Override
-	public void onRecipesReady() {
-
-	}
 	public static Entity createEntity(Class<? extends Entity> entityClass, World world) {
 		try {
 			return entityClass.getConstructor(World.class).newInstance(world);

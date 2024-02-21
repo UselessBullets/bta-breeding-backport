@@ -20,16 +20,7 @@
   "entrypoints": {
     "main": [
 			"useless.btabreeding.BtaBreeding"
-    ],
-		"beforeGameStart": [
-			"useless.btabreeding.BtaBreeding"
-		],
-		"afterGameStart": [
-			"useless.btabreeding.BtaBreeding"
-		],
-		"recipesReady": [
-			"useless.btabreeding.BtaBreeding"
-		]
+    ]
 	},
   "mixins": [
       "btabreeding.mixins.json"
