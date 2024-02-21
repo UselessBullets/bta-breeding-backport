@@ -30,6 +30,8 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	public int fedTimer = 0;
 	@Unique
 	public int childhoodTimer = 0;
+	@Unique
+	public boolean isPersistent = false;
 
 	@Override
 	public int btabreeding$getBreedingTimer() {
@@ -124,6 +126,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 				);
 			} else {
 				this.btabreeding$setFedTimer(20 * 15);
+				isPersistent = true;
 			}
 			return true;
 		}
@@ -136,6 +139,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 			breedingTimer--;
 		}
 		if (btabreeding$getChildTimer() > 0){
+			isPersistent = true;
 			btabreeding$setChildTimer(btabreeding$getChildTimer()-1);
 		}
 		if (btabreeding$isFed()){
@@ -224,6 +228,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 		tag.putInt("breeding$breedtime", breedingTimer);
 		tag.putInt("breeding$fedtime", fedTimer);
 		tag.putInt("breeding$childtime", childhoodTimer);
+		tag.putBoolean("breeding$persistent", isPersistent);
 	}
 
 	@Inject(method = "readAdditionalSaveData(Lcom/mojang/nbt/CompoundTag;)V", at = @At("TAIL"))
@@ -231,5 +236,10 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 		this.breedingTimer = tag.getInteger("breeding$breedtime");
 		this.fedTimer =	tag.getInteger("breeding$fedtime");
 		this.childhoodTimer = tag.getInteger("breeding$childtime");
+		this.isPersistent = tag.getBoolean("breeding$persistent");
+	}
+	@Override
+	public boolean canDespawn(){
+		return super.canDespawn() && !isPersistent;
 	}
 }
