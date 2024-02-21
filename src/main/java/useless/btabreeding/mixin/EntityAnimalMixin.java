@@ -24,6 +24,8 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	public int breedingTimer = 0;
 	@Unique
 	public int fedTimer = 0;
+	@Unique
+	public int childhoodTimer = 0;
 
 	@Override
 	public int btabreeding$getBreedingTimer() {
@@ -33,6 +35,11 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	@Override
 	public int btabreeding$getFedTimer() {
 		return fedTimer;
+	}
+
+	@Override
+	public int btabreeding$getChildTimer() {
+		return childhoodTimer;
 	}
 
 	@Override
@@ -46,8 +53,13 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	}
 
 	@Override
+	public void btabreeding$setChildTimer(int value) {
+		this.childhoodTimer = value;
+	}
+
+	@Override
 	public boolean btabreeding$isBreedable() {
-		return breedingTimer <= 0;
+		return breedingTimer <= 0 && !btabreeding$isBaby();
 	}
 
 	@Override
@@ -64,9 +76,12 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	public void btabreeding$spawnBaby(IBreeding partner) {
 		if (!world.isClientSide) {
 			// Spawn entity
-			Entity entity = BtaBreeding.createEntity(this.getClass(), world);
+			EntityAnimal entity = (EntityAnimal) BtaBreeding.createEntity(this.getClass(), world);
 			entity.moveTo(x, y, z, 0, 0.0f);
 			entity.spawnInit();
+
+			((IBreeding) entity).btabreeding$setChildTimer(20 * 60 * 5);
+
 			world.entityJoinedWorld(entity);
 			this.btabreeding$setFedTimer(0);
 			partner.btabreeding$setFedTimer(0);
@@ -78,12 +93,22 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 			}
 		}
 	}
+
+	@Override
+	public boolean btabreeding$isBaby() {
+		return childhoodTimer > 0;
+	}
+
 	@Override
 	public boolean interact(EntityPlayer entityplayer) {
 		ItemStack item = entityplayer.inventory.getCurrentItem();
 		boolean flag = super.interact(entityplayer);
-		if (item != null && btabreeding$isFoodItem(item) && btabreeding$isBreedable() && item.consumeItem(entityplayer)){
-			this.btabreeding$setFedTimer(20 * 15);
+		if (item != null && btabreeding$isFoodItem(item) && (btabreeding$isBreedable() || btabreeding$isBaby()) && item.consumeItem(entityplayer)){
+			if (this.btabreeding$isBaby()){
+				this.childhoodTimer = (int) (childhoodTimer * 0.75f);
+			} else {
+				this.btabreeding$setFedTimer(20 * 15);
+			}
 			return true;
 		}
 		return flag;
@@ -93,6 +118,9 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	public void onLivingUpdate() {
 		if (breedingTimer > 0){
 			breedingTimer--;
+		}
+		if (childhoodTimer > 0){
+			childhoodTimer--;
 		}
 		if (btabreeding$isFed()){
 			fedTimer--;
@@ -113,9 +141,19 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
             }
 		}
 
-		if (tickCount % 10 == 0){
+		if (tickCount % 40 == 0){
 			list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.bb.expand(10F, 10F, 10F));
-			if (btabreeding$isFed()){
+			if (btabreeding$isBaby()){
+				for (Entity entity : list) {
+					if (entity instanceof IBreeding &&
+						entity.getClass().isInstance(this) &&
+					!((IBreeding) entity).btabreeding$isBaby()) {
+						this.setTarget(entity);
+						break;
+					}
+				}
+			}
+			else if (btabreeding$isFed()){
 				block0:
 				{
 					for (Entity entity : list) {

@@ -4,7 +4,8 @@
   "package": "useless.btabreeding.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "EntityAnimalMixin"
+    "EntityAnimalMixin",
+    "LivingRendererMixin"
   ],
   "client": [
   ],
