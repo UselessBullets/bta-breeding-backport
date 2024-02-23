@@ -32,6 +32,8 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	public int childhoodTimer = 0;
 	@Unique
 	public boolean isPersistent = false;
+	@Unique
+	public Entity passiveTarget = null;
 
 	@Override
 	public int btabreeding$getBreedingTimer() {
@@ -93,16 +95,25 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 			partner.btabreeding$setFedTimer(0);
 			this.btabreeding$setBreedingTimer(20*100);
 			partner.btabreeding$setBreedingTimer(20*100);
-			this.setTarget(null);
-			if (partner instanceof EntityPathfinder){
-				((EntityPathfinder) partner).setTarget(null);
-			}
+			this.btabreeding$setPassiveTarget(null);
+			partner.btabreeding$setPassiveTarget(null);
 		}
 	}
 
 	@Override
 	public boolean btabreeding$isBaby() {
 		return btabreeding$getChildTimer() > 0;
+	}
+	@Override
+	public void btabreeding$setPassiveTarget(Entity entity){
+		this.passiveTarget = entity;
+		if (entity == null){
+			pathToEntity = null;
+		}
+	}
+	@Override
+	public Entity btabreeding$getPassiveTarget() {
+		return passiveTarget;
 	}
 
 	@Override
@@ -163,12 +174,12 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 
 		if (tickCount % 40 == 0){
 			list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.bb.expand(10F, 10F, 10F));
-			if (btabreeding$isBaby()){
+			if (btabreeding$isBaby() && btabreeding$getPassiveTarget() == null){
 				for (Entity entity : list) {
 					if (entity instanceof IBreeding &&
 						entity.getClass().isInstance(this) &&
 					!((IBreeding) entity).btabreeding$isBaby()) {
-						this.setTarget(entity);
+						this.btabreeding$setPassiveTarget(entity);
 						break;
 					}
 				}
@@ -183,11 +194,11 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 							((IBreeding) entity).btabreeding$isFed() &&
 							this.btabreeding$isBreedable() &&
 							((IBreeding) entity).btabreeding$isBreedable()) {
-							this.setTarget(entity);
+							this.btabreeding$setPassiveTarget(entity);
 							break block0;
 						}
 					}
-					this.setTarget(null);
+					this.btabreeding$setPassiveTarget(null);
 				}
 
 			} else if (btabreeding$isBreedable()) {
@@ -195,11 +206,11 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 				{
 					for (Entity entity : list) {
 						if (entity instanceof EntityPlayer && btabreeding$isFoodItem(((EntityPlayer) entity).getHeldItem())) {
-							this.setTarget(entity);
+							this.btabreeding$setPassiveTarget(entity);
 							break block0;
 						}
 					}
-					this.setTarget(null);
+					this.btabreeding$setPassiveTarget(null);
 				}
 			}
 
@@ -221,7 +232,20 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 					d2
 				);
 		}
-
+	}
+	@Override
+	protected void updatePlayerActionState() {
+		if (passiveTarget == null && getCurrentTarget() == null){
+			pathToEntity = null;
+		}
+		if (passiveTarget != null){
+			if (passiveTarget instanceof EntityPlayer && distanceToSqr(passiveTarget) < 9){
+				pathToEntity = null;
+			} else {
+				pathToEntity = world.getPathToEntity(this, passiveTarget, 20);
+			}
+		}
+		super.updatePlayerActionState();
 	}
 	@Inject(method = "addAdditionalSaveData(Lcom/mojang/nbt/CompoundTag;)V", at = @At("TAIL"))
 	private void saveData(CompoundTag tag, CallbackInfo ci){

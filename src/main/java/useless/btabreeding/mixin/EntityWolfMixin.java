@@ -1,9 +1,7 @@
 package useless.btabreeding.mixin;
 
-import net.minecraft.core.entity.Entity;
 import net.minecraft.core.entity.EntityPathfinder;
 import net.minecraft.core.entity.animal.EntityAnimal;
-import net.minecraft.core.entity.animal.EntitySheep;
 import net.minecraft.core.entity.animal.EntityWolf;
 import net.minecraft.core.item.ItemFood;
 import net.minecraft.core.item.ItemStack;
@@ -34,6 +32,7 @@ public abstract class EntityWolfMixin extends EntityAnimalMixin{
 			entity.spawnInit();
 
 			((EntityWolf)entity).setWolfOwner(this.getWolfOwner());
+			((EntityWolf)entity).setWolfTamed(true);
 
 			((IBreeding) entity).btabreeding$setChildTimer(20 * 60 * 5);
 

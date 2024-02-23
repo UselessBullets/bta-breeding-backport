@@ -1,5 +1,6 @@
 package useless.btabreeding;
 
+import net.minecraft.core.entity.Entity;
 import net.minecraft.core.item.ItemStack;
 
 public interface IBreeding {
@@ -14,4 +15,6 @@ public interface IBreeding {
 	boolean btabreeding$isFoodItem(ItemStack stack);
 	void btabreeding$spawnBaby(IBreeding partner);
 	boolean btabreeding$isBaby();
+	void btabreeding$setPassiveTarget(Entity entity);
+	Entity btabreeding$getPassiveTarget();
 }
