@@ -4,13 +4,13 @@
   "version": "${version}",
 
   "name": "Animal Breeding",
-  "description": "This mod aims to help new BTA modders.",
+  "description": "A backport of the animal breeding mechanic of modern Minecraft releases.",
   "authors": [
     "Useless"
   ],
   "contact": {
-    "homepage": "",
-    "sources": ""
+		"homepage": "https://github.com/UselessSolutions/bta-breeding-backport",
+		"issues": "https://github.com/UselessSolutions/bta-breeding-backport/issues"
   },
 
 	"icon": "icon.png",
@@ -27,6 +27,7 @@
   ],
 
   "depends": {
+		"minecraft": "~7.1-beta.1",
     "fabricloader": ">=0.13.3"
   },
   "suggests": {
