@@ -47,4 +47,9 @@ public abstract class EntityWolfMixin extends EntityAnimalMixin{
 			}
 		}
 	}
+
+    @Override
+    public boolean btabreeding$isBreedable() {
+        return getHealth() >= getMaxHealth() && super.btabreeding$isBreedable();
+    }
 }
