@@ -6,10 +6,6 @@ import net.minecraft.core.net.command.CommandError;
 import net.minecraft.core.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import turniplabs.halplibe.helper.BlockBuilder;
-import turniplabs.halplibe.util.GameStartEntrypoint;
-import turniplabs.halplibe.util.RecipeEntrypoint;
-
 
 public class BtaBreeding implements ModInitializer {
     public static final String MOD_ID = "btabreeding";
