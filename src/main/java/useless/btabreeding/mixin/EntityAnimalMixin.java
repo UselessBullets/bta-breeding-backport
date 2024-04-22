@@ -157,7 +157,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 			fedTimer--;
 		}
 		List<Entity> list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.bb.expand(0.2F, 0.0, 0.2F));
-		if (list != null && !list.isEmpty()) {
+		if (list != null && !list.isEmpty() && !isMovementCeased()) {
             for (Entity entity : list) {
                 if (entity instanceof IBreeding &&
 					entity.getClass().isInstance(this) &&
@@ -172,7 +172,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
             }
 		}
 
-		if (tickCount % 40 == 0){
+		if (tickCount % 40 == 0 && !isMovementCeased()){
 			list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.bb.expand(10F, 10F, 10F));
 			if (btabreeding$isBaby() && btabreeding$getPassiveTarget() == null){
 				for (Entity entity : list) {
@@ -185,32 +185,26 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 				}
 			}
 			else if (btabreeding$isFed()){
-				block0:
-				{
-					for (Entity entity : list) {
-						if (entity instanceof IBreeding &&
-							entity.getClass().isInstance(this) &&
-							this.btabreeding$isFed() &&
-							((IBreeding) entity).btabreeding$isFed() &&
-							this.btabreeding$isBreedable() &&
-							((IBreeding) entity).btabreeding$isBreedable()) {
-							this.btabreeding$setPassiveTarget(entity);
-							break block0;
-						}
+				this.btabreeding$setPassiveTarget(null);
+				for (Entity entity : list) {
+					if (entity instanceof IBreeding &&
+						entity.getClass().isInstance(this) &&
+						this.btabreeding$isFed() &&
+						((IBreeding) entity).btabreeding$isFed() &&
+						this.btabreeding$isBreedable() &&
+						((IBreeding) entity).btabreeding$isBreedable()) {
+						this.btabreeding$setPassiveTarget(entity);
+						break;
 					}
-					this.btabreeding$setPassiveTarget(null);
 				}
 
 			} else if (btabreeding$isBreedable()) {
-				block0:
-				{
-					for (Entity entity : list) {
-						if (entity instanceof EntityPlayer && btabreeding$isFoodItem(((EntityPlayer) entity).getHeldItem())) {
-							this.btabreeding$setPassiveTarget(entity);
-							break block0;
-						}
+				this.btabreeding$setPassiveTarget(null);
+				for (Entity entity : list) {
+					if (entity instanceof EntityPlayer && btabreeding$isFoodItem(((EntityPlayer) entity).getHeldItem())) {
+						this.btabreeding$setPassiveTarget(entity);
+						break;
 					}
-					this.btabreeding$setPassiveTarget(null);
 				}
 			}
 
