@@ -1,8 +1,8 @@
 package useless.btabreeding.mixin;
 
-import net.minecraft.core.entity.EntityPathfinder;
-import net.minecraft.core.entity.animal.EntityAnimal;
-import net.minecraft.core.entity.animal.EntityWolf;
+import net.minecraft.core.entity.MobPathfinder;
+import net.minecraft.core.entity.animal.MobAnimal;
+import net.minecraft.core.entity.animal.MobWolf;
 import net.minecraft.core.item.ItemFood;
 import net.minecraft.core.item.ItemStack;
 import net.minecraft.core.world.World;
@@ -11,12 +11,14 @@ import org.spongepowered.asm.mixin.Shadow;
 import useless.btabreeding.BtaBreeding;
 import useless.btabreeding.IBreeding;
 
-@Mixin(value = EntityWolf.class, remap = false)
-public abstract class EntityWolfMixin extends EntityAnimalMixin{
-	@Shadow
-	public abstract String getWolfOwner();
+import java.util.UUID;
 
-	public EntityWolfMixin(World world) {
+@Mixin(value = MobWolf.class, remap = false)
+public abstract class MobWolfMixin extends MobAnimalMixin {
+	@Shadow
+	public abstract UUID getWolfOwner();
+
+	public MobWolfMixin(World world) {
 		super(world);
 	}
 	@Override
@@ -27,12 +29,12 @@ public abstract class EntityWolfMixin extends EntityAnimalMixin{
 	public void btabreeding$spawnBaby(IBreeding partner) {
 		if (!world.isClientSide) {
 			// Spawn entity
-			EntityAnimal entity = (EntityAnimal) BtaBreeding.createEntity(this.getClass(), world);
+			MobAnimal entity = (MobAnimal) BtaBreeding.createEntity(this.getClass(), world);
 			entity.moveTo(x, y, z, 0, 0.0f);
 			entity.spawnInit();
 
-			((EntityWolf)entity).setWolfOwner(this.getWolfOwner());
-			((EntityWolf)entity).setWolfTamed(true);
+			((MobWolf)entity).setWolfOwner(this.getWolfOwner());
+			((MobWolf)entity).setWolfTamed(true);
 
 			((IBreeding) entity).btabreeding$setChildTimer(20 * 60 * 5);
 
@@ -42,8 +44,8 @@ public abstract class EntityWolfMixin extends EntityAnimalMixin{
 			this.btabreeding$setBreedingTimer(20*100);
 			partner.btabreeding$setBreedingTimer(20*100);
 			this.setTarget(null);
-			if (partner instanceof EntityPathfinder){
-				((EntityPathfinder) partner).setTarget(null);
+			if (partner instanceof MobPathfinder){
+				((MobPathfinder) partner).setTarget(null);
 			}
 		}
 	}

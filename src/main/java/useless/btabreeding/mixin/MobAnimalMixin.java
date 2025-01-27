@@ -1,12 +1,13 @@
 package useless.btabreeding.mixin;
 
-import com.mojang.nbt.CompoundTag;
+import com.mojang.nbt.tags.CompoundTag;
 import net.minecraft.core.entity.Entity;
-import net.minecraft.core.entity.EntityPathfinder;
-import net.minecraft.core.entity.animal.EntityAnimal;
-import net.minecraft.core.entity.player.EntityPlayer;
-import net.minecraft.core.item.Item;
+import net.minecraft.core.entity.MobPathfinder;
+import net.minecraft.core.entity.animal.Creature;
+import net.minecraft.core.entity.animal.MobAnimal;
+import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.item.ItemStack;
+import net.minecraft.core.item.Items;
 import net.minecraft.core.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,9 +19,9 @@ import useless.btabreeding.IBreeding;
 
 import java.util.List;
 
-@Mixin(value = EntityAnimal.class, remap = false)
-public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
-	public EntityAnimalMixin(World world) {
+@Mixin(value = MobAnimal.class, remap = false)
+public class MobAnimalMixin extends MobPathfinder implements Creature, IBreeding {
+	public MobAnimalMixin(World world) {
 		super(world);
 	}
 
@@ -77,14 +78,14 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 
 	@Override
 	public boolean btabreeding$isFoodItem(ItemStack stack) {
-		return stack != null && stack.getItem() == Item.wheat;
+		return stack != null && stack.getItem() == Items.WHEAT;
 	}
 
 	@Override
 	public void btabreeding$spawnBaby(IBreeding partner) {
 		if (!world.isClientSide) {
 			// Spawn entity
-			EntityAnimal entity = (EntityAnimal) BtaBreeding.createEntity(this.getClass(), world);
+			MobAnimal entity = (MobAnimal) BtaBreeding.createEntity(this.getClass(), world);
 			entity.moveTo(x, y, z, 0, 0.0f);
 			entity.spawnInit();
 
@@ -117,7 +118,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 	}
 
 	@Override
-	public boolean interact(EntityPlayer entityplayer) {
+	public boolean interact(Player entityplayer) {
 		ItemStack item = entityplayer.inventory.getCurrentItem();
 		boolean flag = super.interact(entityplayer);
 		if (item != null && btabreeding$isFoodItem(item) && (btabreeding$isBreedable() || btabreeding$isBaby()) && item.consumeItem(entityplayer)){
@@ -133,7 +134,8 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 					this.z + (double)(this.random.nextFloat() * this.bbWidth * 2.0F) - (double)this.bbWidth,
 					d,
 					d1,
-					d2
+					d2,
+					0
 				);
 			} else {
 				this.btabreeding$setFedTimer(20 * 15);
@@ -156,7 +158,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 		if (btabreeding$isFed()){
 			fedTimer--;
 		}
-		List<Entity> list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.bb.expand(0.2F, 0.0, 0.2F));
+		List<Entity> list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.bb.expand(0.2F, 0.0, 0.2F).move(-0.1F, -0.1F, -0.1F));
 		if (list != null && !list.isEmpty() && !isMovementCeased()) {
             for (Entity entity : list) {
                 if (entity instanceof IBreeding &&
@@ -173,7 +175,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 		}
 
 		if (tickCount % 40 == 0 && !isMovementCeased()){
-			list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.bb.expand(10F, 10F, 10F));
+			list = this.world.getEntitiesWithinAABBExcludingEntity(this, this.bb.expand(10F, 10F, 10F).move(-5F, -5F, -5F));
 			if (btabreeding$isBaby() && btabreeding$getPassiveTarget() == null){
 				for (Entity entity : list) {
 					if (entity instanceof IBreeding &&
@@ -201,7 +203,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 			} else if (btabreeding$isBreedable()) {
 				this.btabreeding$setPassiveTarget(null);
 				for (Entity entity : list) {
-					if (entity instanceof EntityPlayer && btabreeding$isFoodItem(((EntityPlayer) entity).getHeldItem())) {
+					if (entity instanceof Player && btabreeding$isFoodItem(((Player) entity).getHeldItem())) {
 						this.btabreeding$setPassiveTarget(entity);
 						break;
 					}
@@ -223,25 +225,27 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 					this.z + (double)(this.random.nextFloat() * this.bbWidth * 2.0F) - (double)this.bbWidth,
 					d,
 					d1,
-					d2
+					d2,
+				0
 				);
 		}
 	}
 	@Override
-	protected void updatePlayerActionState() {
+	protected void updateAI() {
 		if (passiveTarget == null && getCurrentTarget() == null){
 			pathToEntity = null;
 		}
 		if (passiveTarget != null){
-			if (passiveTarget instanceof EntityPlayer && distanceToSqr(passiveTarget) < 9){
+			if (passiveTarget instanceof Player && distanceToSqr(passiveTarget) < 9){
 				pathToEntity = null;
 			} else {
 				pathToEntity = world.getPathToEntity(this, passiveTarget, 20);
 			}
 		}
-		super.updatePlayerActionState();
+
+		super.updateAI();
 	}
-	@Inject(method = "addAdditionalSaveData(Lcom/mojang/nbt/CompoundTag;)V", at = @At("TAIL"))
+	@Inject(method = "addAdditionalSaveData(Lcom/mojang/nbt/tags/CompoundTag;)V", at = @At("TAIL"))
 	private void saveData(CompoundTag tag, CallbackInfo ci){
 		tag.putInt("breeding$breedtime", breedingTimer);
 		tag.putInt("breeding$fedtime", fedTimer);
@@ -249,7 +253,7 @@ public class EntityAnimalMixin extends EntityPathfinder implements IBreeding {
 		tag.putBoolean("breeding$persistent", isPersistent);
 	}
 
-	@Inject(method = "readAdditionalSaveData(Lcom/mojang/nbt/CompoundTag;)V", at = @At("TAIL"))
+	@Inject(method = "readAdditionalSaveData(Lcom/mojang/nbt/tags/CompoundTag;)V", at = @At("TAIL"))
 	private void loadData(CompoundTag tag, CallbackInfo ci){
 		this.breedingTimer = tag.getInteger("breeding$breedtime");
 		this.fedTimer =	tag.getInteger("breeding$fedtime");

@@ -2,7 +2,7 @@ package useless.btabreeding;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.entity.Entity;
-import net.minecraft.core.net.command.CommandError;
+import net.minecraft.core.net.command.exceptions.CommandExceptions;
 import net.minecraft.core.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,3 +23,4 @@ public class BtaBreeding implements ModInitializer {
 		}
 	}
 }
+
